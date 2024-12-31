@@ -1,0 +1,25 @@
+import * as net from 'net';
+
+const server: net.Server = net.createServer((connection: net.Socket) => {
+    let bufferCommand = '';
+
+    connection.on('data', (data) => {
+        bufferCommand += data.toString();
+        if (bufferCommand.endsWith('\r\n')) {
+            const command = bufferCommand.trim();
+            bufferCommand = '';
+            if (command === 'PING') {
+                connection.write('+PONG\r\n');
+            } else if (command.startsWith('ECHO')) {
+                const message = command.substring(5).trim();
+                connection.write(`+${message}\r\n`);
+            } else {
+                connection.write('-ERR unknown command\r\n');
+            }
+        }
+    });
+});
+
+server.listen(8080, () => {
+    console.log('Server listening on port 8080');
+});
